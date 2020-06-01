@@ -58,6 +58,8 @@ EXEC=c:\\EXEC
 
 mylib=c:\\EXEC\\MyLib
 MATHLIB = $(mylib)$(PATHSEP)jlp_numeric.a $(mylib)$(PATHSEP)libfftw3.a
+WX_LIB_DIR= C:\\wxWidgets-3.1.1\\build-debug\\lib
+WX_LIB = -L$(WX_LIB_DIR) -lwx_baseu-3.1 -lwx_mswu_core-3.1
 
 endif
 ##############################################################
@@ -75,32 +77,31 @@ JJJ = \
 #
 
 MY_INCL=-I. \
-	-I$(JLPLIB_DIR)$(PATHSEP)jlp_splot  \
 	-I$(JLPLIB_DIR)$(PATHSEP)jlp_wxplot$(PATHSEP)jlp_wxplot_include \
+	-I$(JLPLIB_DIR)$(PATHSEP)jlp_splot_idv \
+	-I$(JLPLIB_DIR)$(PATHSEP)jlp_splot  \
+	-I$(JLPLIB_DIR)$(PATHSEP)jlp_gsegraf$(PATHSEP)jlp_gsegraf_include  \
+	-I$(JLPLIB_DIR)$(PATHSEP)jlp_gseg_wxwid  \
 	-I$(JLPLIB_DIR)$(PATHSEP)jlp_fits \
 	-I$(JLPLIB_DIR)$(PATHSEP)jlp_numeric \
 	-I$(CFITSIO_INCL_DIR)
 
 FITSLIB=$(mylib)$(PATHSEP)jlp_fits.a $(mylib)$(PATHSEP)libcfitsio.a 
-JJT = $(mylib)$(PATHSEP)jlp_splot_idv.a $(mylib)$(PATHSEP)jlp_splot.a \
+MY_LIB= $(mylib)$(PATHSEP)jlp_wxplot.a $(mylib)$(PATHSEP)jlp_splot.a \
+  $(mylib)$(PATHSEP)jlp_splot_idv.a $(mylib)$(PATHSEP)jlp_splot.a \
   $(mylib)$(PATHSEP)jlp_gsegraf.a $(mylib)$(PATHSEP)jlp_gseg_wxwid.a \
+  $(mylib)$(PATHSEP)jlp_numeric.a \
+  $(MATHLIB) $(FITSLIB) -lm
 
-MY_LIB = $(mylib)$(PATHSEP)jlp_wxplot.a $(mylib)$(PATHSEP)jlp_splot.a \
-	$(mylib)$(PATHSEP)jlp_numeric.a \
-  	$(MATHLIB) $(FITSLIB) -lm
 
-JM_OBJ = jlp_spmeas_utils.o jlp_spmeas_latex.o 
+JM_OBJ = spm_frame_menu.o jlp_spmeas_autom.o jlp_spmeas_utils.o \
+	jlp_spmeas_latex.o jlp_spmeas_dlg.o jlp_spmeas_theta_calib.o 
 
 JM_SRC = $(JM_OBJ:.o=.cpp)
 
-GD_OBJ = gdp_frame_logbook.o \
-	gdp_frame_menu.o jlp_wx_overlay.o 
-
+JM_DEP = spm_frame.h spm_frame_id.h jlp_spmeas_def.h \
+	jlp_spmeas_utils.h jlp_spmeas_latex.h jlp_spmeas_dlg.h
  
-JM_DEP = jlp_spmeas.h jlp_spmeas_def.h jlp_spmeas_utils.h jlp_spmeas_latex.h
- 
-GD_DEP = gdp_frame.h gdp_frame_id.h gdp_gdproc2.h
-
 .SUFFIXES:
 .SUFFIXES: .o .cpp .exe $(SUFFIXES) 
 
@@ -120,9 +121,35 @@ all: $(JM_OBJ) jlp_spmeas.exe
 
 jlp_spmeas.o : jlp_spmeas.cpp $(JM_DEP)
 
+jlp_spmeas_autom.o : jlp_spmeas_autom.cpp $(JM_DEP)
+
 jlp_spmeas_utils.o : jlp_spmeas_utils.cpp $(JM_DEP)
 
 jlp_spmeas_latex.o : jlp_spmeas_latex.cpp $(JM_DEP)
+
+########################################################
+# Linux:
+ifeq ($(JLP_SYSTEM),Linux)
+
+jlp_spmeas.exe: jlp_spmeas.cpp  $(JM_DEP)
+
+else
+########################################################
+# Windows:
+jlp_spmeas_rc.o: jlp_spmeas.rc
+        windres --use-temp-file --define USE_XPM -I$(WX_INCLUDE_DIR) jlp_spmeas.rc \
+        -o jlp_spmeas_rc.o --define __WXMSW__ --define NOPCH
+
+jlp_spmeas.exe: $(JM_OBJ) jlp_spmeas.cpp jlp_spmeas_rc.o
+        $(CPP) $(CXFLAGS) $(NO_CONSOLE) -o $(EXEC_DIR)$@ jlp_spmeas.cpp \
+        jlp_spmeas_rc.o $(JM_OBJ) $(MY_LIB) \
+        $(WX_LIB) -lm
+# Missing DLL's:
+# libgcc_s_dw2-1.dll, libstdc++-6.dll
+# I also tried adding the linker options: -static-libgcc -static-libstdc++
+# but it did not work.
+########################################################
+endif
 
 clear: clean
 
