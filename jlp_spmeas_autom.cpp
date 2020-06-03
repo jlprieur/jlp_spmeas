@@ -86,18 +86,20 @@ k = 0;
 while(!feof(fp_in)) {
   if(fscanf(fp_in, "%s\n", in_fname)) {
    if((in_fname[0] != '%') && (in_fname[0] != '#')) {
-     k++;
      status  = AutoMeasureOfAutoc(in_fname);
+     if(status == 0) k++;
      }
    }
 }
 fclose(fp_in);
 nfiles = k;
-printf("%d files have been processed in this input list (%s)\n", k, list_fname1);
-
 // Save binary parameters:
   strcpy(param_fname1, "jlp_spmeas_param.txt");
  JLP_Save_BIN_PARAM_to_file(param_fname1, bin_param1);
+
+str1.Printf(_T(" %d file(s) processed from input list (%s) \n Csv output: %s\n, LateX output: %s\nParameters saved to %s"), 
+		nfiles, list_fname1, csv_fname1, latex_fname1, param_fname1);
+wxMessageBox(str1, _T("ProcessListOfAutocFilesForAutom"), wxOK);
 
 return(status);
 }
@@ -109,14 +111,18 @@ int SpmFrame::AutoMeasureOfAutoc(char *in_name)
 char comments1[128];
 double *dble_image1;
 int status, nx1, ny1;
+wxString str1;
+
+dble_image1 = NULL;
 
 printf("\n*******************************************************\n");
 printf("jlp_spmeas_for_one_file: processing %s\n", in_name);
 status = JLP_LoadFITSImage(in_name, comments1, &dble_image1, &nx1, &ny1);
 
 if(status != 0) {
-    printf("jlp_spmeas_for_one_file/Error in JLP_LoadFITSImage loading %s, status=%d\n", 
-          in_name, status); 
+    str1.Printf(_T("Error in JLP_LoadFITSImage loading %s, status=%d\n"), 
+                in_name, status); 
+    wxMessageBox(str1, _T("AutoMeasureOfAutoc"), wxICON_ERROR);
     return(-1);
     }
 

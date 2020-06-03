@@ -43,7 +43,7 @@ CPP=c++
 NO_CONSOLE=-mwindows 
 
 # C++ flags to use with wxWidgets code
-WX_INCLUDE_DIR= C:\\wxWidgets-3.0.2_32bits\\include
+WX_INCLUDE_DIR= C:\\wxWidgets-3.1.1\\include
 
 # Windows: I add USE_XPM (USE_XPM is needed to have the icon)
 CXFLAGS = -DUSE_XPM -I$(WX_INCLUDE_DIR) $(MY_INCL)
@@ -68,13 +68,6 @@ endif
 PATHSEP=$(strip $(PATHSEP1))
 
 EXEC_DIR = $(EXEC)$(PATHSEP)
-#	
-JJJ = \
-	-I$(JLPLIB_DIR)$(PATHSEP)jlp_splot_idv \
-	-I$(JLPLIB_DIR)$(PATHSEP)jlp_gsegraf$(PATHSEP)jlp_gsegraf_include  \
-	-I$(JLPLIB_DIR)$(PATHSEP)jlp_gseg_wxwid  \
-
-#
 
 MY_INCL=-I. \
 	-I$(JLPLIB_DIR)$(PATHSEP)jlp_wxplot$(PATHSEP)jlp_wxplot_include \
@@ -136,14 +129,15 @@ jlp_spmeas.exe: jlp_spmeas.cpp  $(JM_DEP)
 else
 ########################################################
 # Windows:
+EXEC_DIR=C:\\EXEC\\JLP_Spmeas\\
 jlp_spmeas_rc.o: jlp_spmeas.rc
-        windres --use-temp-file --define USE_XPM -I$(WX_INCLUDE_DIR) jlp_spmeas.rc \
-        -o jlp_spmeas_rc.o --define __WXMSW__ --define NOPCH
+	windres --use-temp-file --define USE_XPM -I$(WX_INCLUDE_DIR) jlp_spmeas.rc \
+	-o jlp_spmeas_rc.o --define __WXMSW__ --define NOPCH
 
 jlp_spmeas.exe: $(JM_OBJ) jlp_spmeas.cpp jlp_spmeas_rc.o
-        $(CPP) $(CXFLAGS) $(NO_CONSOLE) -o $(EXEC_DIR)$@ jlp_spmeas.cpp \
-        jlp_spmeas_rc.o $(JM_OBJ) $(MY_LIB) \
-        $(WX_LIB) -lm
+	$(CPP) $(CXFLAGS) $(NO_CONSOLE) -o $(EXEC_DIR)$@ jlp_spmeas.cpp \
+	jlp_spmeas_rc.o $(JM_OBJ) $(MY_LIB) \
+	$(WX_LIB) -lm
 # Missing DLL's:
 # libgcc_s_dw2-1.dll, libstdc++-6.dll
 # I also tried adding the linker options: -static-libgcc -static-libstdc++

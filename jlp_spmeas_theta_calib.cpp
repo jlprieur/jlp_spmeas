@@ -10,14 +10,20 @@
 -------------------------------------------------------------------*/
 #define DEBUG
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <math.h>
-//#include <jlp_ftoc.h>
-#include "jlp_numeric.h"
+// NOT WORKING IN THIS ORDER IN WINDOWS:
+//  expected unqualified-id before numeric constant
+// # define TBYTE 11
+//#include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <fcntl.h>
+// #include <math.h>
+// #include "jlp_numeric.h"
+// #include "jlp_fitsio.h"
+// OK when including jlp_wx_ipanel.h ? WHY ???
+#include "jlp_wx_ipanel.h"
 #include "jlp_fitsio.h"
+#include "jlp_numeric.h"
 
 #include "spm_frame.h"
 
