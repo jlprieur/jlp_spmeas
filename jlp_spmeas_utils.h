@@ -47,6 +47,7 @@ int JLP_PatchProcessAndSaveBinaryMeasurements(FILE *fp_data,
                                   double radius0,
                                   double rho10, double theta10,
                                   double error_rho10, double error_theta10,
+                                  double neg_max_for_patch,
                                   double *negative_percent, int *n_meas,
                                   double *rho_mean, double *theta_mean);
 int JLP_MeasureBinaryFromMaskedImage(double *dble_image1, int nx1, int ny1,

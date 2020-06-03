@@ -46,6 +46,7 @@ int JLP_PatchProcessAndSaveBinaryMeasurements(FILE *fp_data,
                                   double radius0,
                                   double rho10, double theta10,
                                   double error_rho10, double error_theta10,
+                                  double neg_max_for_patch,
                                   int *negative_percent, int *n_meas,
                                   double *rho_mean, double *theta_mean);
 int JLP_MeasureBinaryFromMaskedImage(double *dble_image1, int nx1, int ny1,
@@ -768,13 +769,16 @@ for(i_iter = 0; i_iter < 2; i_iter++) {
                                              xc_right, yc_right, radius0,
                                              rho10, theta10,
                                              error_rho10, error_theta10,
+                                             bin_param0.neg_max_for_patch,
                                              &negative_percent, &n_meas,
                                              &rho_mean, &theta_mean);
 // Error if large oscillations in the background:
 // 17 too small...
 //   if(negative_percent > 20.) {
-   if(negative_percent > bin_param0.neg_max_for_patch) {
-    printf("object rejected because negative_percent=%.2f > 20\n", negative_percent);
+   if((status != 0) ||
+      (negative_percent > bin_param0.neg_max_for_patch)) {
+    printf("object rejected because negative_percent=%.2f > %.2f or status=%d\n", 
+           negative_percent, bin_param0.neg_max_for_patch, status);
     unresolved = 1; 
     icheck[5] = 1;
     }
@@ -836,6 +840,7 @@ int JLP_PatchProcessAndSaveBinaryMeasurements(FILE *fp_data,
                                   double radius0,
                                   double rho10, double theta10,
                                   double error_rho10, double error_theta10,
+                                  double neg_max_for_patch,
                                   double *negative_percent, int *n_meas, 
                                   double *rho_mean, double *theta_mean)
 {
@@ -886,9 +891,9 @@ g_maxi = -1;
 // and  m_polynomial_method = 0/1 (profile/polynomial)
 
  status = JLP_CosmeticPatch2(tmp_image1, nx1, ny1, xc, yc, radius0);
-/*** DEBUG
+#ifdef DEBUG
 printf("DEBUG/OK: From JLP_CosmeticPatch2 with xc=%.1f yc=%.1f radius0= %.1f status=%d\n", xc, yc, radius0, status);
-***/
+#endif
 
 // Compute the difference (original image - new flattened image)
   for(i = 0; i < nx1 * ny1; i++) 
@@ -907,8 +912,9 @@ printf("DEBUG/OK: From speckle_patch_statistics mean_sky=%.2f bad_fit=%d\n",
 mean_sky, sigma_sky, mean_sky/max_value, (int)(*negative_percent));
 // Error if large oscillations in the background:
 // 17 too small...
- if(*negative_percent > 20.) {
+ if(*negative_percent > neg_max_for_patch) {
     delete[] tmp_image1;
+    printf("Rejected because negative_percent > %.2f\n", neg_max_for_patch);
     return(-1);
   }
 
@@ -916,10 +922,10 @@ mean_sky, sigma_sky, mean_sky/max_value, (int)(*negative_percent));
    diam0 = 2. * radius0;
    status = astrom_barycenter(tmp_image1, nx1, ny1, xc, yc, diam0, mean_sky,
                                 &xac, &yac, &maxi, &flux);
-/**** DEBUG
+#ifdef DEBUG
 printf("DEBUG/OK: From astrom_barycenter xac=%.2f yac=%.2f status=%d\n", 
         xac, yac, status);
-*/
+#endif
 
    if(status) {
      fprintf(stderr, "astrom_barycenter/Error: central patch is null!\
